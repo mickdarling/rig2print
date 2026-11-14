@@ -160,6 +160,49 @@ def intersect_volume(a, b, angle):
     return volume
 
 
+def triangulate_closed(bm):
+    bmesh.ops.triangulate(bm, faces=list(bm.faces), ngon_method="EAR_CLIP")
+    # Blender can drop collinear n-gon corners during tessellation. Repair only
+    # resulting T-junctions: split a triangle's long boundary edge at existing
+    # boundary vertices, without moving vertices or filling arbitrary holes.
+    for _ in range(100):
+        boundary = [e for e in bm.edges if e.is_boundary]
+        points = {v for e in boundary for v in e.verts}
+        repaired = False
+        for edge in boundary:
+            face = edge.link_faces[0]
+            loop = next(loop for loop in face.loops if loop.edge == edge)
+            a, b = loop.vert, loop.link_loop_next.vert
+            c = loop.link_loop_prev.vert
+            direction = b.co-a.co
+            length2 = direction.length_squared
+            if length2 < 1e-12:
+                continue
+            middle = []
+            for vertex in points-{a, b, c}:
+                t = (vertex.co-a.co).dot(direction)/length2
+                if 1e-6 < t < 1-1e-6 and (vertex.co-(a.co+t*direction)).length < 1e-5:
+                    middle.append((t, vertex))
+            if not middle:
+                continue
+            chain = [a]+[v for _, v in sorted(middle, key=lambda p: p[0])]+[b]
+            bm.faces.remove(face)
+            for left, right in zip(chain, chain[1:]):
+                bm.faces.new((left, right, c))
+            if not edge.link_faces:
+                bm.edges.remove(edge)
+            repaired = True
+            break
+        if not repaired:
+            break
+    # Wire edges left by the tessellator have no surface to export.
+    for edge in list(bm.edges):
+        if edge.is_wire:
+            bm.edges.remove(edge)
+    if any(not edge.is_manifold for edge in bm.edges):
+        raise ValueError("surface is not closed after triangulation/T-junction repair")
+
+
 def export_stl(path, objects):
     triangles = []
     for obj in objects:
@@ -168,10 +211,11 @@ def export_stl(path, objects):
         # Triangulate a copy explicitly so the source body's edges survive.
         bm = bmesh.new()
         bm.from_mesh(obj.data)
-        bmesh.ops.triangulate(bm, faces=list(bm.faces), ngon_method="EAR_CLIP")
-        if any(not edge.is_manifold for edge in bm.edges):
+        try:
+            triangulate_closed(bm)
+        except ValueError as error:
             bm.free()
-            raise ValueError(f"{obj.name} is not closed after triangulation")
+            raise ValueError(f"{obj.name}: {error}") from error
         for triangle in bm.faces:
             points = [obj.matrix_world @ v.co for v in triangle.verts]
             normal = (points[1]-points[0]).cross(points[2]-points[0]).normalized()
