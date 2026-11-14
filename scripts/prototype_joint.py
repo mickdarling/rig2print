@@ -163,11 +163,20 @@ def intersect_volume(a, b, angle):
 def export_stl(path, objects):
     triangles = []
     for obj in objects:
-        obj.data.calc_loop_triangles()
-        for triangle in obj.data.loop_triangles:
-            points = [obj.matrix_world @ obj.data.vertices[i].co for i in triangle.vertices]
+        # Boolean n-gons can have collinear boundary vertices. Loop-triangle
+        # tessellation may omit those vertices and leave T-junctions in STL.
+        # Triangulate a copy explicitly so the source body's edges survive.
+        bm = bmesh.new()
+        bm.from_mesh(obj.data)
+        bmesh.ops.triangulate(bm, faces=list(bm.faces), ngon_method="EAR_CLIP")
+        if any(not edge.is_manifold for edge in bm.edges):
+            bm.free()
+            raise ValueError(f"{obj.name} is not closed after triangulation")
+        for triangle in bm.faces:
+            points = [obj.matrix_world @ v.co for v in triangle.verts]
             normal = (points[1]-points[0]).cross(points[2]-points[0]).normalized()
             triangles.append(struct.pack("<12fH", *normal, *(v for p in points for v in p), 0))
+        bm.free()
     with path.open("xb") as handle:
         handle.write(b"Rig2Print mm Z-up UNPRINTED candidate".ljust(80, b" "))
         handle.write(struct.pack("<I", len(triangles)))

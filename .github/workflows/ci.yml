@@ -93,6 +93,16 @@ jobs:
             --span-mm 150 --output-dir build/ferris/knee-prototype
       - name: Check the exported STL independently
         run: python3 scripts/check_stl.py build/ferris/knee-prototype
+      - name: Include a small preview for API-based review
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import base64
+          from pathlib import Path
+          path = Path("build/ferris/knee-prototype/preview.png")
+          if path.is_file():
+              print("JOINT_PREVIEW_PNG " + base64.b64encode(path.read_bytes()).decode())
+          PY
       - name: Preserve rig evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
