@@ -4,11 +4,11 @@ The `CI` workflow runs on every pull request targeting `main`, pushes to `main`,
 
 ## Checks
 
-Four Linux jobs run the same `python scripts/check.py` command using Python 3.11, 3.12, 3.13 and 3.14. The command needs Git and the Python standard library; there are no pip installs. Rust jobs build and test the core on the minimum supported compiler 1.85.0 and current stable, using the committed Cargo.lock. Stable also runs rustfmt and Clippy with warnings treated as errors.
+Four Linux jobs run the same `python scripts/check.py` command using Python 3.11, 3.12, 3.13 and 3.14. The command needs Git and PyYAML, pinned in requirements-dev.txt for native Dollhouse YAML frontmatter checks; CI installs that development dependency. Rust jobs build and test the core on the minimum supported compiler 1.85.0 and current stable, using the committed Cargo.lock. Stable also runs rustfmt and Clippy with warnings treated as errors.
 
 - Parse every tracked Python source file, including Blender scripts, without importing Blender.
 - Parse tracked JSON with duplicate-key and non-finite-constant rejection.
-- Check the portable Dollhouse manifest's dependency references, creation order, duplicate definitions, ensemble roles and template variables offline.
+- Check native Dollhouse Markdown frontmatter, filename/type consistency, duplicate definitions/keys, all bundled ensemble members, roles and template variables offline.
 - Smoke-test the CLI and run the full unit suite.
 
 The final `CI passed` check succeeds only when both language matrices succeed. It runs even if a dependency fails; failed, cancelled or skipped matrix results cannot count as success. Python jobs have five-minute timeouts, Rust jobs ten minutes, and the final check two minutes. New pushes cancel superseded runs for the same PR.
@@ -21,7 +21,7 @@ This job supplies source, adapter and limited geometry evidence. It does not con
 
 Public PR code runs on GitHub-hosted Ubuntu 24.04 runners, including fork PRs subject to GitHub's normal approval policy. The workflow uses `pull_request`, a read-only repository token and checkout without persisted credentials. It does not require repository secrets or use personal self-hosted runners.
 
-Actions are pinned to full commit SHAs. Dependabot checks action and Cargo dependencies monthly and opens update PRs; review and CI apply to those PRs too. The Rust core uses serde_json; the Python tools have no third-party runtime dependency outside Blender.
+Actions are pinned to full commit SHAs. Dependabot checks action and Cargo dependencies monthly and opens update PRs; review and CI apply to those PRs too. The Rust core uses serde_json. PyYAML is used for repository checks and the optional Dollhouse installer; the Blender conversion adapter has no added runtime dependency.
 
 ## Merge protection
 
@@ -33,6 +33,7 @@ This document describes the intended settings, not proof that repository rules h
 
 ```sh
 git add <new-files>
+python3 -m pip install -r requirements-dev.txt
 python3 scripts/check.py --all
 git diff --check
 ```
