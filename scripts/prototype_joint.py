@@ -347,6 +347,16 @@ def main():
     slot = box("stem-slot", (keepout, 0, height/2), (2*keepout, slot_width, 4*height))
     boolean(female, slot, "DIFFERENCE")
     boolean(child_body, female, "UNION")
+    # Validate motion on the same conforming triangle surfaces that are exported.
+    for part in parts:
+        bm = bmesh.new()
+        bm.from_mesh(part.data)
+        try:
+            triangulate_closed(bm)
+            bm.to_mesh(part.data)
+        finally:
+            bm.free()
+        part.data.update()
     checks = {part.name: health(part) for part in parts}
     angles = [-args.motion_deg, -args.motion_deg/2, 0, args.motion_deg/2, args.motion_deg]
     motion = [{"angle_degrees": angle, "intersection_mm3": intersect_volume(parent_body, child_body, angle)}
