@@ -1,8 +1,10 @@
 # Rig2Print
 
-Turn articulated Blender models into **print-in-place articulated models**. Ferris the Rustacean is the first exemplar; the goal is a reusable, inspectable workflow for other characters.
+Turn articulated Blender models into **print-in-place articulated models**. Ferris the Rustacean is the first exemplar; an [articulated python snake](examples/python/README.md) is the planned second example. The goal is a reusable, inspectable workflow for other characters.
 
-**Status: project bootstrap and feasibility study.** This repository currently provides a Blender scene inspector, a mechanical-plan checker, an evidence-based reuse study, and a staged implementation backlog. It does **not** yet generate articulated STL files. No Ferris conversion or physical print has been verified.
+**Status: project bootstrap and feasibility study.** This repository provides a Rust mechanical-plan library and CLI, a Python Blender scene inspector and reference checker, an evidence-based reuse study, and a staged implementation backlog. It does **not** yet generate articulated STL files. Neither exemplar has a verified conversion or physical print.
+
+Rust is the main application language for the CLI, mechanical model, validation and future conversion orchestration. Python remains the Blender adapter language because Blender exposes `bpy`. The original Python checker is retained as a transitional reference while the Rust core develops.
 
 An animation rig describes motion. A printable mechanism needs separate closed solids, physical joints, clearance, retention, adequate walls, and a feasible print orientation. Simply exporting a posed mesh to STL loses the rig.
 
@@ -22,18 +24,18 @@ The intended contribution is rig-aware mapping, branching limb handling, reprodu
 
 ## Run the starter tools
 
-Python 3.11+; the checker has no third-party dependencies. Blender 4.2+ is the intended inspection target, with integration verification still pending.
+Rust 1.85+ for the core; Python 3.11+ for repository checks and the Blender launcher. Blender 4.2+ is the intended inspection target, with integration verification still pending. Cargo dependencies are locked; the Python tools use only the standard library outside Blender.
 
 ```sh
-python3 -m rig2print --help
-python3 -m unittest discover -s tests -v
+cargo run --locked -- --help
+python3 scripts/check.py --all
 
 # Download the pinned upstream asset first; see examples/ferris/README.md.
 python3 -m rig2print inspect assets/ferris3d/blend/ferris3d_v1.0.blend \
   --blender /path/to/blender --output build/ferris-inventory.json
 
 # Deliberately fails: this is an incomplete design brief, not a print-ready plan.
-python3 -m rig2print check-plan examples/ferris/plan.draft.json
+cargo run --locked -- check-plan examples/ferris/plan.draft.json
 ```
 
 The inspector reports objects, evaluated mesh topology, world-space bounds, armatures, deform bones, vertex groups and modifiers. It disables automatic embedded script execution, does not save over the source, and writes only the requested report. This setting is not a security sandbox: inspect untrusted files in an isolated environment.
@@ -46,7 +48,7 @@ Print and measure a clearance coupon, then one Ferris limb joint, then the compl
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). Keep conversion logic usable without an AI service. Dollhouse expertise is an optional planning and review layer.
+See [CONTRIBUTING.md](CONTRIBUTING.md) and the [CI and PR workflow](docs/ci.md). Run `python3 scripts/check.py --all` for the Python and Rust checks. Keep conversion logic usable without an AI service. Dollhouse expertise is an optional planning and review layer.
 
 ## License and credit
 
