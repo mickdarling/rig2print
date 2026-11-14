@@ -2,7 +2,7 @@
 
 The first input is [RayMarch/ferris3d](https://github.com/RayMarch/ferris3d). It publishes `blend/ferris3d_v1.0.blend` under CC0. Original character: Karen Rustad Tölva. 3D interpretation: RayMarch.
 
-Repository inventory and licensing have been inspected. The Blender scene, actual rig structure and physical manufacturability have **not** yet been verified. Do not infer the number or names of mechanical joints from the preview.
+The pinned scene has now been inspected in Blender 4.0.2: 13 meshes, 33 bones and 19 skin-weighted bones. Open boundaries were found on eyes and tongue. A [rig-derived knee specimen](prototype.md) is executable; full-model conversion and physical manufacturability remain unverified. Do not infer mechanical joint selection from the preview or the raw deform flag alone.
 
 ## Obtain the pinned source
 

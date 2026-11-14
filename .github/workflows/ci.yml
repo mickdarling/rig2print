@@ -64,10 +64,59 @@ jobs:
       - name: Run Rust tests
         run: cargo test --locked
 
+  blender:
+    name: Blender rig integration
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out the proposed changes
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Blender
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install --no-install-recommends -y blender
+          blender --version
+      - name: Set up the Rust CLI
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec
+        with:
+          toolchain: stable
+      - name: Build the Rust CLI
+        run: cargo build --locked
+      - name: Check Blender STL triangulation regression
+        run: blender --background --factory-startup --disable-autoexec --python-exit-code 1 --python scripts/test_blender_stl.py
+      - name: Inspect the pinned pre-rigged Ferris asset
+        run: python3 scripts/inspect_ferris_ci.py
+      - name: Prototype a captive knee from the actual Ferris rig
+        run: |
+          target/debug/rig2print prototype-joint build/ferris/source.blend \
+            --mesh leg1L --armature Armature --parent-bone UpperLeg1.L --child-bone LowerLeg1.L \
+            --span-mm 150 --output-dir build/ferris/knee-prototype
+      - name: Check the exported STL independently
+        run: python3 scripts/check_stl.py build/ferris/knee-prototype
+      - name: Include a small preview for API-based review
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import base64
+          from pathlib import Path
+          path = Path("build/ferris/knee-prototype/preview.png")
+          if path.is_file():
+              print("JOINT_PREVIEW_PNG " + base64.b64encode(path.read_bytes()).decode())
+          PY
+      - name: Preserve rig evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: blender-evidence
+          path: build/ferris/
+          if-no-files-found: error
+
   required:
     name: CI passed
     if: ${{ always() }}
-    needs: [checks, rust]
+    needs: [checks, rust, blender]
     runs-on: ubuntu-24.04
     timeout-minutes: 2
     permissions: {}
@@ -76,8 +125,9 @@ jobs:
         env:
           CHECKS_RESULT: ${{ needs.checks.result }}
           RUST_RESULT: ${{ needs.rust.result }}
+          BLENDER_RESULT: ${{ needs.blender.result }}
         run: |
-          if [ "$CHECKS_RESULT" != "success" ] || [ "$RUST_RESULT" != "success" ]; then
-            echo "Checks did not all pass: Python=$CHECKS_RESULT Rust=$RUST_RESULT"
+          if [ "$CHECKS_RESULT" != "success" ] || [ "$RUST_RESULT" != "success" ] || [ "$BLENDER_RESULT" != "success" ]; then
+            echo "Checks did not all pass: Python=$CHECKS_RESULT Rust=$RUST_RESULT Blender=$BLENDER_RESULT"
             exit 1
           fi

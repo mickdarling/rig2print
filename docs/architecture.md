@@ -14,17 +14,17 @@ flowchart TD
     F -->|"fused or weak joint"| C
 ```
 
-Only the scene inventory and plan-contract checks are implemented in the bootstrap. Geometry adapters and downstream gates are planned.
+Scene inventory, plan-contract checks and an experimental rig-derived two-body hinge adapter are implemented. The adapter evaluates an existing weighted bone pair and exports a specimen with geometry evidence. Full-model conversion and downstream fabrication qualification remain outstanding. See the [knee experiment](../examples/ferris/prototype.md) and its shape-preservation limitation.
 
 ## Language boundary
 
-The Rust crate contains the primary mechanical-plan validator and CLI. Future shared geometry, motion checks and conversion orchestration belong in Rust where practical. The Python package retains the Blender launcher and an early reference checker; `scripts/inspect_blend.py` uses Blender's Python API. Keep a versioned JSON exchange boundary so Blender dependencies do not enter the standalone Rust validator.
+The Rust crate contains the primary mechanical-plan validator and CLI. Its prototype command validates arguments and embeds/launches the Blender adapter. Evaluated source geometry and Boolean operations currently use Blender's Python API; shared geometry and orchestration can move into Rust where useful. Keep JSON reports at the boundary so Blender dependencies do not enter the standalone validator.
 
 Use two examples through the same core: Ferris for branching limbs and a planned original python snake for a simple joint chain. Neither model's mascot determines the implementation language of its conversion backend. A Python Blender generator for the snake can be an adapter example while both assets share the Rust validator.
 
 ## Boundaries
 
-- **Blender adapter:** inspect evaluated meshes and rig metadata; identify visible versus helper objects; confirm units, pose, modifiers and instance handling. Do not overwrite the original `.blend`. Rig endpoints are hints, not automatic mechanical anchor locations.
+- **Blender adapter:** inspect evaluated meshes and rig metadata; identify visible versus helper objects; confirm units, pose, modifiers and instance handling. Do not overwrite the original `.blend`. The first prototype tests bone-derived placement, but rig endpoints remain hints rather than guaranteed optimal mechanical anchors.
 - **Mechanical plan:** explicit rigid bodies, parent/child pairs, hinge or ball joint, world-space anchor and axis, motion limits, one-sided clearance, wall target, retention method, and print orientation/support strategy. Keep manual corrections reviewable. Body splitting may use existing objects, weights or user-marked cuts; ambiguous mixed weights require review.
 - **Geometry adapter:** initially compare existing open-source backends. Fuse each joint feature into its own intended rigid body, remove original material that crosses joints, and preserve gaps between moving bodies. Fail visibly on Boolean or segmentation errors.
 - **Validation:** distinguish closed solids from a single shell. A print-in-place assembly normally has multiple disconnected mesh components in one STL. Check self-intersections, wall thickness, attachment, minimum distances, retention and motion across each joint's requested range. Sampled motion checks are not continuous collision proofs.

@@ -13,7 +13,9 @@ Four Linux jobs run the same `python scripts/check.py` command using Python 3.11
 
 The final `CI passed` check succeeds only when both language matrices succeed. It runs even if a dependency fails; failed, cancelled or skipped matrix results cannot count as success. Python jobs have five-minute timeouts, Rust jobs ten minutes, and the final check two minutes. New pushes cancel superseded runs for the same PR.
 
-These are source and contract checks. They do not execute Blender, contact a Dollhouse server, validate geometry, run a slicer, or certify a physical print. Report those separately.
+The additional required `Blender rig integration` job installs Ubuntu's Blender, verifies the pinned Ferris asset, inspects its actual rig and runs the Rust prototype command on its weighted left middle knee. It checks the exported binary STL independently and preserves source/inventory/prototype/report artifacts. The verified Blender version is recorded in the report. The aggregate check also requires this job to pass.
+
+This job supplies source, adapter and limited geometry evidence. It does not contact a Dollhouse server, establish continuous collision freedom, run a slicer or certify a physical print. Report those separately. The Ferris specimen can pass basic geometry checks while still being flagged for shape review.
 
 ## Execution and dependencies
 
