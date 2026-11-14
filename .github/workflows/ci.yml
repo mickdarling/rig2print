@@ -80,6 +80,12 @@ jobs:
           blender --version
       - name: Inspect the pinned pre-rigged Ferris asset
         run: python3 scripts/inspect_ferris_ci.py
+      - name: Prototype a captive knee from the actual Ferris rig
+        run: |
+          blender --background --factory-startup --disable-autoexec build/ferris/source.blend \
+            --python-exit-code 1 --python scripts/prototype_joint.py -- \
+            --mesh leg1L --armature Armature --parent-bone UpperLeg1.L --child-bone LowerLeg1.L \
+            --span-mm 150 --output-dir build/ferris/knee-prototype
       - name: Preserve rig evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
