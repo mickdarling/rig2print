@@ -200,7 +200,10 @@ def triangulate_closed(bm):
         if edge.is_wire:
             bm.edges.remove(edge)
     if any(not edge.is_manifold for edge in bm.edges):
-        raise ValueError("surface is not closed after triangulation/T-junction repair")
+        bad = [{"points": [list(v.co) for v in edge.verts],
+                "faces": [list(list(v.co) for v in f.verts) for f in edge.link_faces]}
+               for edge in bm.edges if not edge.is_manifold]
+        raise ValueError("surface is not closed after triangulation/T-junction repair: "+json.dumps(bad[:12]))
 
 
 def export_stl(path, objects):
