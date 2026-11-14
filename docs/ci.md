@@ -25,6 +25,19 @@ Actions are pinned to full commit SHAs. Dependabot checks action and Cargo depen
 
 ## Merge protection
 
+The default is to merge only a clean PR: required CI passes and review findings
+are addressed. Wait for automated review of the final head commit, then inspect
+review submissions, inline comments and unresolved threads immediately before
+merging. No review yet is a pending review, not a clean result. If the head
+changes, wait for review of the new head.
+
+Fix P1 and P2 findings before merging under the normal workflow. An exception
+authorized by the task context must have a separate linked issue for each
+deferred finding before the merge, including priority, original review link,
+impact, acceptance criteria and reason for deferral. Document the exception in
+the PR. Issue creation is tracking, not a substitute for a clean review or a
+reason to resolve an unfixed thread.
+
 Workflow files alone do not enforce merge policy. Configure a `main` branch rule or ruleset to require a pull request and the `CI passed` status check, block force pushes/deletion, and require conversation resolution. Require branches to be up to date if using ordinary merges; use the merge queue's checks if a queue is enabled. The workflow supports either arrangement but does not enable a queue.
 
 This document describes the intended settings, not proof that repository rules have been applied. Inspect the live GitHub branch settings for enforcement. A solo maintainer can require the PR and check without requiring an approval from a second person.
