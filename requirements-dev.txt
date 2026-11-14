@@ -1,0 +1,2 @@
+# YAML frontmatter validation for repository checks; not a runtime converter dependency.
+PyYAML==6.0.3

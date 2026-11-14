@@ -2,7 +2,7 @@
 
 Start with an issue describing the input, target process, expected motion, and a measurable acceptance test. Use small fixture meshes with explicit licensing. Submit source recipes and reports alongside generated examples.
 
-Run `python3 scripts/check.py --all` before opening a PR. This runs Python syntax, strict JSON parsing, portable Dollhouse bundle checks, CLI smoke check and unit tests, plus Rust formatting, Clippy and locked Cargo tests. CI runs the same commands in language-specific jobs. New files must be added to Git so the tracked-file checks include them. The Python-only command is `python3 scripts/check.py`. Blender-dependent changes also need a documented headless integration run with the exact Blender version.
+Install `requirements-dev.txt`, then run `python3 scripts/check.py --all` before opening a PR. This runs Python syntax, strict JSON parsing, native Dollhouse Markdown/frontmatter and dependency checks, CLI smoke check and unit tests, plus Rust formatting, Clippy and locked Cargo tests. CI runs the same commands in language-specific jobs. New files must be added to Git so the tracked-file checks include them. The Python-only command is `python3 scripts/check.py`. Blender-dependent changes also need a documented headless integration run with the exact Blender version.
 
 Open a feature branch and pull request targeting `main`. CI runs on Python 3.11–3.14 and Rust 1.85.0/stable; the aggregate check is `CI passed`. See [CI and PR workflow](docs/ci.md) for coverage and merge-protection setup. Use the PR template to distinguish automated, Blender and physical evidence.
 

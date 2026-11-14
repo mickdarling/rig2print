@@ -5,7 +5,6 @@ from pathlib import Path
 import re
 
 
-ELEMENT_TYPES = {"persona", "skill", "template", "agent", "memory", "ensemble"}
 ROLES = {"primary", "support", "override", "monitor", "core"}
 
 
@@ -24,90 +23,108 @@ def strict_json(text):
     return json.loads(text, object_pairs_hook=pairs, parse_constant=constant)
 
 
-def identity(item):
-    if not isinstance(item, dict):
-        raise ValueError("element reference must be an object")
-    kind, name = item.get("element_type"), item.get("element_name")
-    if not isinstance(kind, str) or kind not in ELEMENT_TYPES:
-        raise ValueError(f"unknown element type: {kind!r}")
-    if not isinstance(name, str) or not name.strip():
-        raise ValueError("element_name must be a nonempty string")
-    return kind, name
+
+FOLDERS = {"personas": "persona", "skills": "skill", "templates": "template", "ensembles": "ensemble"}
 
 
-def validate_bundle(bundle):
-    if not isinstance(bundle, dict) or bundle.get("format") != "rig2print-mcpaql-creation-manifest":
-        raise ValueError("unexpected Dollhouse bundle format")
-    if type(bundle.get("version")) is not int or bundle["version"] != 1:
-        raise ValueError("unsupported Dollhouse bundle version")
-    required, operations = bundle.get("requires"), bundle.get("operations")
-    if not isinstance(required, list) or not isinstance(operations, list) or not operations:
-        raise ValueError("bundle requires dependency and nonempty operation arrays")
+def read_element(path):
+    import yaml
+
+    class UniqueLoader(yaml.SafeLoader):
+        pass
+
+    def mapping(loader, node, deep=False):
+        result = {}
+        for key_node, value_node in node.value:
+            key = loader.construct_object(key_node, deep=deep)
+            if key in result:
+                raise ValueError(f"duplicate YAML key: {key}")
+            result[key] = loader.construct_object(value_node, deep=deep)
+        return result
+
+    UniqueLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, mapping)
+    text = Path(path).read_text(encoding="utf-8")
+    if not text.startswith("---\n") or "\n---\n" not in text[4:]:
+        raise ValueError(f"{path}: missing Markdown YAML frontmatter")
+    header, body = text[4:].split("\n---\n", 1)
+    try:
+        metadata = yaml.load(header, Loader=UniqueLoader)
+    except (yaml.YAMLError, TypeError) as error:
+        raise ValueError(f"{path}: invalid YAML frontmatter: {error}") from error
+    if not isinstance(metadata, dict) or not body.strip():
+        raise ValueError(f"{path}: metadata mapping and nonempty Markdown body required")
+    return metadata, body
+
+
+def validate_elements(documents):
     available = set()
-    for item in required:
-        key = identity(item)
+    for relative, (metadata, body) in documents.items():
+        path = Path(relative)
+        kind = FOLDERS.get(path.parent.name)
+        if kind is None or metadata.get("type") != kind:
+            raise ValueError(f"{path}: type must match its portfolio folder")
+        name = metadata.get("name")
+        if not isinstance(name, str) or name != path.stem or not re.fullmatch(r"[a-z][a-z0-9-]{0,99}", name):
+            raise ValueError(f"{path}: name must match its filename and use kebab-case")
+        for field in ("description", "version"):
+            if not isinstance(metadata.get(field), str) or not metadata[field].strip():
+                raise ValueError(f"{path}: {field} is required")
+        if metadata.get("format_version") != "v2":
+            raise ValueError(f"{path}: native v2 format marker required")
+        key = kind, name
         if key in available:
-            raise ValueError(f"duplicate dependency: {key}")
+            raise ValueError(f"duplicate element: {key}")
         available.add(key)
-    for operation in operations:
-        if not isinstance(operation, dict) or operation.get("operation") != "create_element":
-            raise ValueError("bundle permits only create_element operations")
-        params = operation.get("params")
-        if not isinstance(params, dict):
-            raise ValueError("create_element requires params")
-        key = identity({"element_type": operation.get("element_type"),
-                        "element_name": params.get("element_name")})
-        if key in available:
-            raise ValueError(f"duplicate or dependency-overwriting definition: {key}")
-        for field in ("description",):
-            if not isinstance(params.get(field), str) or not params[field].strip():
-                raise ValueError(f"{key}: {field} is required")
-        kind = key[0]
-        if kind in {"persona", "skill", "template", "agent"}:
-            if not isinstance(params.get("instructions"), str) or not params["instructions"].strip():
-                raise ValueError(f"{key}: instructions are required")
+        if kind == "skill" and (not isinstance(metadata.get("instructions"), str) or not metadata["instructions"].strip()):
+            raise ValueError(f"{path}: skill instructions are required")
         if kind == "template":
-            content, metadata = params.get("content"), params.get("metadata")
-            if not isinstance(content, str) or not content.strip() or not isinstance(metadata, dict):
-                raise ValueError(f"{key}: template content and metadata are required")
             variables = metadata.get("variables")
-            if not isinstance(variables, list):
-                raise ValueError(f"{key}: variables must be an array")
+            if not isinstance(variables, list) or not variables:
+                raise ValueError(f"{path}: top-level template variables are required")
             names = []
             for variable in variables:
                 if not isinstance(variable, dict) or not isinstance(variable.get("name"), str):
-                    raise ValueError(f"{key}: variable requires a name")
+                    raise ValueError(f"{path}: invalid template variable")
                 names.append(variable["name"])
-            placeholders = set(re.findall(r"{{\s*([A-Za-z_]\w*)\s*}}", content))
+            placeholders = set(re.findall(r"{{\s*([A-Za-z_]\w*)\s*}}", body))
             if len(set(names)) != len(names) or set(names) != placeholders:
-                raise ValueError(f"{key}: template variables must match placeholders exactly")
-        if kind == "ensemble":
-            metadata = params.get("metadata")
-            members = metadata.get("elements") if isinstance(metadata, dict) else None
-            if not isinstance(members, list) or not members:
-                raise ValueError(f"{key}: ensemble members are required")
-            seen = set()
-            for member in members:
-                reference = identity(member)
-                if reference not in available:
-                    raise ValueError(f"{key}: unresolved or out-of-order member: {reference}")
-                role = member.get("role")
-                if not isinstance(role, str) or role not in ROLES:
-                    raise ValueError(f"{key}: invalid ensemble role")
-                if reference in seen:
-                    raise ValueError(f"{key}: duplicate ensemble member: {reference}")
-                seen.add(reference)
-        available.add(key)
+                raise ValueError(f"{path}: template variables must match placeholders exactly")
+    for relative, (metadata, _) in documents.items():
+        if metadata["type"] != "ensemble":
+            continue
+        members = metadata.get("elements")
+        if not isinstance(members, list) or not members:
+            raise ValueError(f"{relative}: native top-level elements array required")
+        seen = set()
+        for member in members:
+            if not isinstance(member, dict):
+                raise ValueError(f"{relative}: invalid ensemble member")
+            kind, name = member.get("element_type"), member.get("element_name")
+            if not isinstance(kind, str) or not isinstance(name, str) or (kind, name) not in available:
+                raise ValueError(f"{relative}: unresolved ensemble member: {kind!r}/{name!r}")
+            if not isinstance(member.get("role"), str) or member["role"] not in ROLES:
+                raise ValueError(f"{relative}: invalid ensemble role")
+            if (kind, name) in seen:
+                raise ValueError(f"{relative}: duplicate ensemble member")
+            seen.add((kind, name))
+
+
+def check_markdown_elements(root, paths):
+    if (root / "dollhouse/bundle.json").exists():
+        raise ValueError("Dollhouse elements must be separate native Markdown files, not bundle.json")
+    documents = {path: read_element(root / path) for path in paths
+                 if path.startswith("dollhouse/portfolio/") and path.endswith(".md")}
+    if not documents:
+        raise ValueError("native Dollhouse Markdown elements are missing")
+    validate_elements(documents)
+    return len(documents)
 
 
 def check_json_files(root, paths):
     count = 0
     for relative in paths:
         path = Path(relative)
-        if path.suffix != ".json":
-            continue
-        document = strict_json((root / path).read_text(encoding="utf-8"))
-        if path.as_posix() == "dollhouse/bundle.json":
-            validate_bundle(document)
-        count += 1
+        if path.suffix == ".json":
+            strict_json((root / path).read_text(encoding="utf-8"))
+            count += 1
     return count

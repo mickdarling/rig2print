@@ -30,6 +30,7 @@ Rust 1.85+ for the core; Python 3.11+ for repository checks. Blender 4.0.2 is in
 
 ```sh
 cargo run --locked -- --help
+python3 -m pip install -r requirements-dev.txt
 python3 scripts/check.py --all
 
 # Generate the rig-derived two-body knee specimen; see its documented limits.
@@ -53,7 +54,7 @@ Print and measure a clearance coupon, then one Ferris limb joint, then the compl
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) and the [CI and PR workflow](docs/ci.md). Run `python3 scripts/check.py --all` for the Python and Rust checks. Keep conversion logic usable without an AI service. Dollhouse expertise is an optional planning and review layer.
+See [CONTRIBUTING.md](CONTRIBUTING.md) and the [CI and PR workflow](docs/ci.md). Install `requirements-dev.txt`, then run `python3 scripts/check.py --all` for the Python and Rust checks. Keep conversion logic usable without an AI service. Dollhouse expertise is an optional planning and review layer.
 
 ## License and credit
 

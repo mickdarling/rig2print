@@ -6,7 +6,7 @@ from pathlib import Path
 import subprocess
 import sys
 
-from check_repository import check_json_files
+from check_repository import check_json_files, check_markdown_elements
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -24,7 +24,8 @@ def main():
         for path in python_files:
             ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         count = check_json_files(ROOT, paths)
-        print(f"Checked {len(python_files)} Python files and {count} JSON files.", flush=True)
+        elements = check_markdown_elements(ROOT, paths)
+        print(f"Checked {len(python_files)} Python files, {count} JSON files and {elements} Dollhouse Markdown elements.", flush=True)
         subprocess.run([sys.executable, "-m", "rig2print", "--help"], cwd=ROOT, check=True)
         subprocess.run([sys.executable, "-m", "unittest", "discover", "-s", "tests", "-v"],
                        cwd=ROOT, check=True)
