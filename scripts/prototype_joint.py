@@ -212,6 +212,9 @@ def triangulate_closed(bm):
     for edge in list(bm.edges):
         if edge.is_wire:
             bm.edges.remove(edge)
+    for vertex in list(bm.verts):
+        if not vertex.link_faces:
+            bm.verts.remove(vertex)
     if any(not edge.is_manifold for edge in bm.edges):
         bad = [{"points": [list(v.co) for v in edge.verts],
                 "faces": [list(list(v.co) for v in f.verts) for f in edge.link_faces]}
