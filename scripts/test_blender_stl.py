@@ -30,3 +30,17 @@ with tempfile.TemporaryDirectory() as directory:
     assert report["components"] == 1, report
     assert abs(report["signed_volume_mm3"]-4/3) < 1e-6, report
 print("Blender STL T-junction regression passed")
+
+# Opposite coincident triangles have zero net surface. A Boolean n-gon can
+# produce such a pair; cancelling it must preserve the surrounding solid.
+obj = mesh_object("opposite surface regression",
+    [(0, 0, 0), (2, 0, 0), (0, 2, 0), (0, 0, 2), (0.5, 0.2, 0.2)],
+    [(0, 2, 1), (0, 1, 3), (1, 2, 3), (2, 0, 3), (0, 1, 4), (1, 0, 4)])
+with tempfile.TemporaryDirectory() as directory:
+    path = Path(directory) / "opposite.stl"
+    export_stl(path, [obj])
+    report = check_stl(path)
+    assert report["nonmanifold_edges"] == 0, report
+    assert report["components"] == 1, report
+    assert abs(report["signed_volume_mm3"]-4/3) < 1e-6, report
+print("Blender STL opposite-surface regression passed")

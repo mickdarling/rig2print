@@ -195,6 +195,19 @@ def triangulate_closed(bm):
             break
         if not repaired:
             break
+    # Boolean n-gons can also tessellate into coincident, oppositely wound
+    # triangles. Cancel only exact opposite pairs (zero net oriented surface).
+    pairs = {}
+    for face in bm.faces:
+        pairs.setdefault(frozenset(face.verts), []).append(face)
+    for faces in pairs.values():
+        if len(faces) == 2:
+            left, right = faces
+            left.normal_update()
+            right.normal_update()
+            if left.normal.dot(right.normal) < -0.999:
+                bm.faces.remove(left)
+                bm.faces.remove(right)
     # Wire edges left by the tessellator have no surface to export.
     for edge in list(bm.edges):
         if edge.is_wire:
