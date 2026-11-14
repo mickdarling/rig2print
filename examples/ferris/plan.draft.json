@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "units": "mm",
+  "target_span_mm": 150,
+  "source": {
+    "repository": "https://github.com/RayMarch/ferris3d",
+    "revision": "2a8ed2b5484b87e831c70f3346891fe1cab9aab4",
+    "path": "blend/ferris3d_v1.0.blend",
+    "license": "CC0-1.0"
+  },
+  "process": {
+    "type": "FDM",
+    "printer": null,
+    "material": null,
+    "slicer_profile": null,
+    "nozzle_mm": null,
+    "layer_height_mm": null,
+    "coupon_verified": false
+  },
+  "parts": [],
+  "joints": []
+}

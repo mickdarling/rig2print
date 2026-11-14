@@ -1,0 +1,13 @@
+{
+  "repository": "https://github.com/RayMarch/ferris3d",
+  "revision": "2a8ed2b5484b87e831c70f3346891fe1cab9aab4",
+  "path": "blend/ferris3d_v1.0.blend",
+  "git_blob_sha1": "c8c9eda55ae9b9d4d576e750ab03b3bc415319c2",
+  "upstream_size_bytes": 7735976,
+  "license": "CC0-1.0",
+  "character_credit": "Karen Rustad Tolva",
+  "model_credit": "RayMarch",
+  "reviewed_on": "2026-11-13",
+  "scene_inspected": false,
+  "physical_print_verified": false
+}
