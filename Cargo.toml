@@ -1,0 +1,12 @@
+[package]
+name = "rig2print"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+license = "MIT"
+description = "Plan validation for rig-aware print-in-place articulated models"
+repository = "https://github.com/mickdarling/rig2print"
+publish = false
+
+[dependencies]
+serde_json = "1.0.145"

@@ -16,6 +16,12 @@ flowchart TD
 
 Only the scene inventory and plan-contract checks are implemented in the bootstrap. Geometry adapters and downstream gates are planned.
 
+## Language boundary
+
+The Rust crate contains the primary mechanical-plan validator and CLI. Future shared geometry, motion checks and conversion orchestration belong in Rust where practical. The Python package retains the Blender launcher and an early reference checker; `scripts/inspect_blend.py` uses Blender's Python API. Keep a versioned JSON exchange boundary so Blender dependencies do not enter the standalone Rust validator.
+
+Use two examples through the same core: Ferris for branching limbs and a planned original python snake for a simple joint chain. Neither model's mascot determines the implementation language of its conversion backend. A Python Blender generator for the snake can be an adapter example while both assets share the Rust validator.
+
 ## Boundaries
 
 - **Blender adapter:** inspect evaluated meshes and rig metadata; identify visible versus helper objects; confirm units, pose, modifiers and instance handling. Do not overwrite the original `.blend`. Rig endpoints are hints, not automatic mechanical anchor locations.

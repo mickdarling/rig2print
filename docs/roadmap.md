@@ -20,9 +20,9 @@ Implement or reuse a captive hinge and a ball/socket candidate with finite print
 
 Build complete model from the reviewed plan, inspect all joint gaps and collisions, check the sliced toolpath, then perform one complete print. Publish recipe, source, STL, slicer profile details, hashes and photos/video of motion. State unsupported bones, altered silhouette and measured motion limits. Do not label the STL verified before the physical print passes.
 
-## M5 — Reusable Blender workflow
+## M5 — Python snake and reusable Blender workflow
 
-Add another openly licensed articulated model with a different skeleton. Validate that the same core pipeline works through a new plan rather than model-specific code. Add an interactive Blender panel and 3MF packaging after the headless pipeline and benchmark are sound.
+Create an original articulated python snake as the second openly licensed example. Its simple chain can also serve as an early M1 benchmark fixture before the complete Ferris print. Validate that the same Rust core pipeline works for chain and branching skeletons through different plans rather than model-specific conversion code. Add an interactive Blender panel and 3MF packaging after the STL workflow is qualified. See examples/python/README.md for the brief; the snake asset is not created yet.
 
 ## Acceptance rubric
 
