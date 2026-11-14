@@ -64,10 +64,34 @@ jobs:
       - name: Run Rust tests
         run: cargo test --locked
 
+  blender:
+    name: Blender rig integration
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out the proposed changes
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Blender
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install --no-install-recommends -y blender
+          blender --version
+      - name: Inspect the pinned pre-rigged Ferris asset
+        run: python3 scripts/inspect_ferris_ci.py
+      - name: Preserve rig evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: blender-evidence
+          path: build/ferris/
+          if-no-files-found: error
+
   required:
     name: CI passed
     if: ${{ always() }}
-    needs: [checks, rust]
+    needs: [checks, rust, blender]
     runs-on: ubuntu-24.04
     timeout-minutes: 2
     permissions: {}
@@ -76,8 +100,9 @@ jobs:
         env:
           CHECKS_RESULT: ${{ needs.checks.result }}
           RUST_RESULT: ${{ needs.rust.result }}
+          BLENDER_RESULT: ${{ needs.blender.result }}
         run: |
-          if [ "$CHECKS_RESULT" != "success" ] || [ "$RUST_RESULT" != "success" ]; then
-            echo "Checks did not all pass: Python=$CHECKS_RESULT Rust=$RUST_RESULT"
+          if [ "$CHECKS_RESULT" != "success" ] || [ "$RUST_RESULT" != "success" ] || [ "$BLENDER_RESULT" != "success" ]; then
+            echo "Checks did not all pass: Python=$CHECKS_RESULT Rust=$RUST_RESULT Blender=$BLENDER_RESULT"
             exit 1
           fi
