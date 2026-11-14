@@ -338,6 +338,11 @@ def main():
     scene.cycles.samples = 16
     scene.render.resolution_x, scene.render.resolution_y = 640, 480
     scene.render.resolution_percentage = 100
+    # The source asset may be configured for an animation/video export.
+    scene.render.image_settings.file_format = "PNG"
+    scene.render.film_transparent = False
+    scene.render.use_compositing = False
+    scene.render.use_sequencer = False
     scene.render.filepath = str(output / "preview.png")
     bpy.ops.render.render(write_still=True)
     report["output_sha256"] = {path.name: hashlib.sha256(path.read_bytes()).hexdigest()
