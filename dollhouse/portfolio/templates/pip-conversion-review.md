@@ -2,22 +2,24 @@
 name: pip-conversion-review
 type: template
 format_version: v2
-version: 1.0.0
+version: 1.0.1
 description: Evidence-separated conversion review.
 author: mickdarling
 created: '2026-11-14T15:58:38Z'
-modified: '2026-11-14T15:58:38Z'
+modified: '2026-11-14T16:17:42Z'
 tags:
 - rig2print
 - print-in-place
-instructions: Render every field. Use unrun for absent evidence. Use one-line variable values.
+instructions: Render required fields. Provenance is optional and may be omitted. Use unrun
+  for absent evidence. Use one-line variable values.
 variables:
 - name: asset
   type: string
   required: true
 - name: provenance
   type: string
-  required: true
+  required: false
+  default: ''
 - name: process
   type: string
   required: true
@@ -45,10 +47,10 @@ variables:
 output_format: markdown
 examples:
 - title: Unprinted knee review
-  description: Complete sample variables with absent evidence marked unrun.
+  description: Sample variables with optional provenance omitted and absent evidence marked
+    unrun.
   variables:
     asset: Ferris knee candidate
-    provenance: unrun
     process: unrun
     mapping: unrun
     joints: unrun

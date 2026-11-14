@@ -17,7 +17,7 @@ Dollhouse is an optional expertise layer for planning and reviewing conversions.
 | [skills/pip-tolerance-fits.md](portfolio/skills/pip-tolerance-fits.md) | Explicit gap conventions, sizing and retention checks |
 | [skills/pip-dfam-review.md](portfolio/skills/pip-dfam-review.md) | Layer feasibility, mesh/slicer checks and qualification |
 | [skills/pip-calibration-ladder.md](portfolio/skills/pip-calibration-ladder.md) | Target-process coupons and representative joint trials |
-| [templates/pip-conversion-review.md](portfolio/templates/pip-conversion-review.md) | Evidence-separated output with ten required fields |
+| [templates/pip-conversion-review.md](portfolio/templates/pip-conversion-review.md) | Evidence-separated output with nine required fields and optional provenance |
 
 These focused methods are original project elements. They replace the old recipe's references to four unbundled CAD/printing skills. Broad specialist teams remain optional; none is needed to install this set.
 
@@ -65,7 +65,7 @@ Validate the personas, skills and template individually too, using their types/n
 
 ## Use the expertise
 
-Give the assistant access to this repository and the actual Blender asset, source/license/revision, inventory and available geometry/slicer/print evidence. Include final size, desired motion and printer/material/profile when known. Mark unknowns explicitly; do not invent them to complete the report.
+Give the assistant access to this repository and the actual Blender asset, available source/license/revision details, inventory and available geometry/slicer/print evidence. Include final size, desired motion and printer/material/profile when known. Mark unknowns explicitly; do not invent them to complete the report.
 
 For Ferris:
 
@@ -73,7 +73,7 @@ For Ferris:
 
 For another pre-rigged character, update the public context reference skill or provide a separate asset brief. Keep reusable mechanical methods separate from model-specific facts. Use the Rust CLI and Blender adapter for deterministic conversion work; record actual outcomes and hashes rather than presenting a proposed experiment as executed.
 
-The report template requires `asset`, `provenance`, `process`, `mapping`, `joints`, `geometry_evidence`, `slicer_evidence`, `physical_evidence`, `blockers` and `next_experiment`. Supply every field when calling `render`; use `unrun` for absent evidence.
+The report template requires `asset`, `process`, `mapping`, `joints`, `geometry_evidence`, `slicer_evidence`, `physical_evidence`, `blockers` and `next_experiment`. `provenance` is optional: omit it or supply available source details; when omitted it renders as an empty value. Missing provenance alone does not block a review. Supply the nine required fields when calling `render`; use `unrun` for absent evidence.
 
 To stop using this set, ask Dollhouse to deactivate the ensemble and check its response. Review any members that remain active before continuing unrelated work.
 
