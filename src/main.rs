@@ -155,6 +155,9 @@ fn prototype(args: &[String]) -> Result<u8, String> {
         "Unprinted joint candidate: {}",
         output.join("prototype.stl").display()
     );
+    if report["review_required"] == true {
+        println!("Shape review required: inspect preview.png and report.json before printing.");
+    }
     Ok(0)
 }
 
