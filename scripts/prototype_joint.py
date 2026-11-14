@@ -293,6 +293,9 @@ def main():
         "clearance_mm": gap, "wall_mm": wall, "keepout_radius_mm": keepout,
         "pin_radius_mm": pin, "keeper_radius_mm": keeper, "slot_width_mm": slot_width,
         "body_checks": checks, "sampled_motion": motion,
+        "review_required": keepout > 2*outer,
+        "review_notes": (["bone-derived cut needs a large removal region; inspect shape loss and improve joint placement"]
+                         if keepout > 2*outer else []),
         "limitations": ["experimental two-body specimen, not full-model conversion",
             "bone-derived bisector cut; skin weights verify binding but do not optimize segmentation",
             "five sampled poses do not prove continuous collision freedom",
@@ -312,6 +315,34 @@ def main():
         part["source_bone"] = args.parent_bone if part == parent_body else args.child_bone
     bpy.context.scene.unit_settings.system = "METRIC"
     bpy.context.scene.unit_settings.scale_length = 0.001
+    # Render the exported bodies, not hidden cutters or the original unmodified rig.
+    for part, color in zip(parts, ((0.08, 0.35, 0.7, 1), (0.9, 0.3, 0.05, 1))):
+        material = bpy.data.materials.new(part.name)
+        material.diffuse_color = color
+        part.data.materials.append(material)
+    points = [v.co for part in parts for v in part.data.vertices]
+    center = sum(points, Vector())/len(points)
+    span = max(max(p[i] for p in points)-min(p[i] for p in points) for i in range(3))
+    bpy.ops.object.camera_add(location=center+Vector((span, -span, span)))
+    camera = bpy.context.object
+    camera.rotation_euler = (center-camera.location).to_track_quat("-Z", "Y").to_euler()
+    camera.data.type = "ORTHO"
+    camera.data.ortho_scale = span*1.5
+    camera.data.clip_end = span*10
+    scene = bpy.context.scene
+    scene.camera = camera
+    bpy.ops.object.light_add(type="SUN", rotation=(0.4, -0.5, -0.4))
+    bpy.context.object.data.energy = 3
+    scene.world.color = (0.4, 0.4, 0.4)
+    scene.render.engine = "CYCLES"
+    scene.cycles.samples = 16
+    scene.render.resolution_x, scene.render.resolution_y = 640, 480
+    scene.render.resolution_percentage = 100
+    scene.render.filepath = str(output / "preview.png")
+    bpy.ops.render.render(write_still=True)
+    report["output_sha256"] = {path.name: hashlib.sha256(path.read_bytes()).hexdigest()
+                               for path in output.glob("*.stl")}
+    (output / "report.json").write_text(json.dumps(report, indent=2)+"\n")
     bpy.ops.wm.save_as_mainfile(filepath=str(output / "prototype.blend"))
 
 

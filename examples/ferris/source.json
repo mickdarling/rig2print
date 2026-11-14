@@ -8,6 +8,9 @@
   "character_credit": "Karen Rustad Tolva",
   "model_credit": "RayMarch",
   "reviewed_on": "2026-11-13",
-  "scene_inspected": false,
+  "scene_inspected": true,
+  "inspection_blender_version": "4.0.2",
+  "source_sha256": "a158352815726791e7bf14b1b08696fc046e9d51797ccdebda86a0f9fabf2d2e",
+  "inspection_workflow_run": 43537274578,
   "physical_print_verified": false
 }

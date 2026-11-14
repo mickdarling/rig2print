@@ -88,7 +88,7 @@ def main():
         "scope": "active-scene, current frame, viewport-evaluated meshes; not print qualification",
         "limitations": ["bone endpoints are rest-space coordinates transformed into world space",
             "topology edge counts do not test self-intersections or wall thickness",
-            "instanced geometry is not expanded", "vertex weights are not exported"],
+            "instanced geometry is not expanded", "per-vertex weights are not exported; group summaries only"],
         "objects": objects}
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("x") as handle:

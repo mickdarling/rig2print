@@ -2,7 +2,7 @@
 
 Turn articulated Blender models into **print-in-place articulated models**. Ferris the Rustacean is the first exemplar; an [articulated python snake](examples/python/README.md) is the planned second example. The goal is a reusable, inspectable workflow for other characters.
 
-**Status: project bootstrap and feasibility study.** This repository provides a Rust mechanical-plan library and CLI, a Python Blender scene inspector and reference checker, an evidence-based reuse study, and a staged implementation backlog. It does **not** yet generate articulated STL files. Neither exemplar has a verified conversion or physical print.
+**Status: experimental rig-to-joint prototype.** The Rust CLI can derive and export a two-body captive-hinge candidate from an existing weighted Blender bone pair. The first example uses Ferris's actual knee rig. It also provides plan checks and a Blender scene inspector. Full-character conversion and physical printing remain unverified; the initial specimen requires shape review.
 
 Rust is the main application language for the CLI, mechanical model, validation and future conversion orchestration. Python remains the Blender adapter language because Blender exposes `bpy`. The original Python checker is retained as a transitional reference while the Rust core develops.
 
@@ -12,6 +12,8 @@ An animation rig describes motion. A printable mechanism needs separate closed s
 
 - [Existing projects and reuse decisions](docs/existing-projects.md)
 - [Ferris exemplar](examples/ferris/README.md)
+- [Executable knee prototype](examples/ferris/prototype.md)
+- [Manual workflows and measured rig evidence](docs/manual-workflows.md)
 - [Architecture and scope](docs/architecture.md)
 - [Roadmap and acceptance criteria](docs/roadmap.md)
 - [Dollhouse expertise](dollhouse/README.md)
@@ -24,11 +26,14 @@ The intended contribution is rig-aware mapping, branching limb handling, reprodu
 
 ## Run the starter tools
 
-Rust 1.85+ for the core; Python 3.11+ for repository checks and the Blender launcher. Blender 4.2+ is the intended inspection target, with integration verification still pending. Cargo dependencies are locked; the Python tools use only the standard library outside Blender.
+Rust 1.85+ for the core; Python 3.11+ for repository checks. Blender 4.0.2 is integration-tested for Ferris inspection and the knee prototype. Cargo dependencies are locked; Python adapters use Blender's bundled API.
 
 ```sh
 cargo run --locked -- --help
 python3 scripts/check.py --all
+
+# Generate the rig-derived two-body knee specimen; see its documented limits.
+cargo run --locked -- prototype-joint --help
 
 # Download the pinned upstream asset first; see examples/ferris/README.md.
 python3 -m rig2print inspect assets/ferris3d/blend/ferris3d_v1.0.blend \

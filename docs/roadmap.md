@@ -2,7 +2,7 @@
 
 ## M0 — Evidence and reusable project foundation
 
-Bootstrap: source provenance, reuse study, scene inspector, plan-contract checker, Dollhouse expertise, and acceptance-driven issues. Unit checks can run without Blender. Blender integration and all physical evidence remain outstanding.
+Bootstrap: source provenance, reuse study, scene inspector, plan-contract checker, Dollhouse expertise, and acceptance-driven issues. Unit checks can run without Blender. Blender CI now inspects the pinned Ferris rig and exercises a knee specimen; physical evidence remains outstanding.
 
 ## M1 — Benchmark upstream conversion
 
@@ -11,6 +11,8 @@ Compare articulated-toys on centred, translated and branched original fixtures. 
 ## M2 — Inspect and map Ferris
 
 Run the inspector with a pinned Blender version. Confirm units and target span, rig hierarchy, skinning, object segmentation, modifiers and rest versus print pose. Produce a reviewed joint map with no invented names. Choose target printer, material, nozzle, profile and desired motion. Implement representative segmentation and geometry export integration tests.
+
+Progress: actual scene inventory and one weighted knee connection have been exercised in Blender 4.0.2. The first cut removes too much surrounding shape and is marked for review. Full joint mapping, improved local placement and a printer-calibrated process remain open.
 
 ## M3 — Physical joint coupon
 
